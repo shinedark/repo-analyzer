@@ -1,25 +1,37 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react'
+import RepoVisualizer from './components/RepoVisualizer'
+import './App.css' // Add this import for the CSS
 
 function App() {
+  const [repoLink, setRepoLink] = useState('')
+  const [submittedLink, setSubmittedLink] = useState('')
+
+  const handleLinkChange = (e) => {
+    setRepoLink(e.target.value)
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setSubmittedLink(repoLink)
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className="container">
+        <h1>GitHub Repository Analyzer</h1>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={repoLink}
+            onChange={handleLinkChange}
+            placeholder="Enter GitHub Repo Link"
+          />
+          <button type="submit">Analyze</button>
+        </form>
+        {submittedLink && <RepoVisualizer repoLink={submittedLink} />}
+      </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
