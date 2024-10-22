@@ -1,0 +1,110 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  text-align: justify;
+  margin: 10px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #f0f0f0;
+}
+
+.modal-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.file-info {
+  margin-bottom: 1rem;
+}
+
+.file-info p {
+  margin: 0.5rem 0;
+}
+
+.file-content {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 1rem;
+}
+
+.file-info ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.file-analysis {
+
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.file-analysis p {
+  margin: 5px 0;
+}
+
+.analysis-value {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.analysis-section {
+  margin-top: 10px;
+}
+
+.analysis-list {
+  list-style-type: none;
+  padding-left: 20px;
+  margin: 5px 0;
+}
+
+.analysis-list li {
+  margin: 3px 0;
+  color: #555;
+}
+
+@media (max-width: 600px) {
+  .modal-content {
+    width: 95%;
+  }
+
+  .modal-header h1 {
+    font-size: 1.2rem;
+  }
+}

@@ -23,19 +23,21 @@ const RepoVisualizer = ({ repoLink }) => {
   // Use a constant to store the token and ensure it's accessible
   const githubToken = process.env.REACT_APP_GITHUB_TOKEN
 
-  console.log(repoLink, 'repoLink')
-
   const handleNodeClick = useCallback(async (event, node) => {
     try {
       const file = node.data
-      console.log('Clicked node:', file)
+
       const response = await fetch(file.downloadUrl)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       const content = await response.text()
-      console.log('Fetched content:', content.substring(0, 100) + '...')
-      setSelectedFile({ ...file, content })
+
+      // Parse JSON content if the file is a JSON file
+      const parsedContent =
+        file.extension === 'json' ? JSON.parse(content) : content
+
+      setSelectedFile({ ...file, content: parsedContent })
     } catch (error) {
       console.error('Error fetching file content:', error)
       alert('Error fetching file content. Please try again.')
@@ -73,7 +75,6 @@ const RepoVisualizer = ({ repoLink }) => {
           )
         }
         const repoContent = await response.json()
-        console.log('Repository Content:', repoContent)
 
         let files = []
         for (const item of repoContent) {
@@ -83,7 +84,6 @@ const RepoVisualizer = ({ repoLink }) => {
           } else if (item.type === 'file') {
             // Include all file types for now
             files.push(item)
-            console.log(`Found file: ${item.name}`)
           }
         }
         return files
@@ -129,6 +129,8 @@ const RepoVisualizer = ({ repoLink }) => {
 
         // Add file node
         const fileColor = getNodeColor(fileName)
+        const fileExtension = fileName.split('.').pop().toLowerCase()
+        const isClickable = fileExtension !== '' // Check if the file has an extension
         nodes.push({
           id: file.path,
           type: 'default',
@@ -140,11 +142,11 @@ const RepoVisualizer = ({ repoLink }) => {
             path: file.path,
             downloadUrl: file.download_url,
             htmlUrl: file.html_url,
-            extension: fileName.split('.').pop().toLowerCase(),
+            extension: fileExtension,
             isDirectory: false,
             linesOfCode: 0,
             numberOfFunctions: 0,
-            onClick: () => handleNodeClick(file), // Add this line
+            onClick: isClickable ? () => handleNodeClick(file) : undefined, // Only add onClick if clickable
           },
           style: {
             background: fileColor,
@@ -152,7 +154,7 @@ const RepoVisualizer = ({ repoLink }) => {
             border: '1px solid #999',
             borderRadius: '5px',
             padding: '10px',
-            cursor: 'pointer', // Add this line to show it's clickable
+            cursor: isClickable ? 'pointer' : 'default', // Change cursor based on clickability
           },
         })
 
@@ -197,7 +199,6 @@ const RepoVisualizer = ({ repoLink }) => {
 
     try {
       const files = await fetchRepoFiles(owner, repo)
-      console.log('Fetched files:', files.length)
 
       if (files.length > 0) {
         let { nodes, edges } = createNodes(files)
@@ -211,7 +212,6 @@ const RepoVisualizer = ({ repoLink }) => {
               throw new Error(`HTTP error! status: ${response.status}`)
             }
             const code = await response.text()
-            console.log(`Parsing file: ${file.name}`)
 
             const ast = parseFile(file.name, code)
             const dependencies = extractDependencies(file.name, ast)
@@ -245,7 +245,6 @@ const RepoVisualizer = ({ repoLink }) => {
 
         setNodes(nodes)
         setEdges(edges)
-        console.log('Set nodes and edges:', nodes.length, edges.length)
       } else {
         setError('No files found in the repository')
       }
@@ -267,22 +266,6 @@ const RepoVisualizer = ({ repoLink }) => {
   const memoizedNodes = useMemo(() => nodes, [nodes])
   const memoizedEdges = useMemo(() => edges, [edges])
 
-  console.log(memoizedNodes, 'memoizedNodes')
-  console.log(memoizedEdges, 'memoizedEdges')
-
-  // Add this useEffect to log element details
-  useEffect(() => {
-    console.log('Detailed Elements:')
-    memoizedNodes.forEach((el, index) => {
-      console.log(`Element ${index}:`, {
-        id: el.id,
-        type: el.type,
-        data: el.data,
-        position: el.position,
-      })
-    })
-  }, [memoizedNodes])
-
   if (isLoading) {
     return <div>Loading repository structure...</div>
   }
@@ -302,8 +285,8 @@ const RepoVisualizer = ({ repoLink }) => {
           fitView
           style={{ height: '100%', width: '100%' }}
         >
-          <Background />
-          <Controls />
+          <Background gap={16} size={1.5} />
+          <Controls fitView />
           <MiniMap />
         </ReactFlow>
       </div>

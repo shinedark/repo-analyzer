@@ -1,12 +1,14 @@
 import React from 'react'
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs'
+// import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
+// import { coldarkDark } from 'react-syntax-highlighter/dist/esm/styles/hljs'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { coldarkDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import GasPriceCalculator from './GasPriceCalculator'
+import './FileContentModal.css'
 
 // ... existing imports and language registrations ...
 
 const FileContentModal = ({ file, content, onClose }) => {
-  console.log('FileContentModal rendered', { file, content })
-
   const getLanguage = (fileName) => {
     if (!fileName) return 'plaintext'
 
@@ -69,8 +71,9 @@ const FileContentModal = ({ file, content, onClose }) => {
   }
 
   const analyzeCode = (content, fileName) => {
-    if (!content || typeof content !== 'string')
+    if (!content || typeof content !== 'string') {
       return { lines: 0, functions: 0, imports: [], contracts: [] }
+    }
 
     const lines = content.split('\n').length
     const fileExtension = fileName.split('.').pop().toLowerCase()
@@ -81,20 +84,24 @@ const FileContentModal = ({ file, content, onClose }) => {
       functionRegex = /function\s+(\w+)/g
       importRegex = /import\s+(?:(?:\{[^}]+\}|[^{}\s]+)\s+from\s+)?["']([^"']+)["']/g
       contractRegex = /contract\s+(\w+)/g
+    } else if (fileExtension === 'js' || fileExtension === 'ts') {
+      functionRegex = /function\s+(\w+)|(\w+)\s*=\s*function|\(.*\)\s*=>/g
+      importRegex = /import\s+(?:(?:\{[^}]+\}|[^{}\s]+)\s+from\s+)?["']([^"']+)["']/g
     } else {
-      // ... existing regex for other file types ...
+      // For other file types, we'll just count lines
+      return { lines, functions: 0, imports: [], contracts: [] }
     }
 
     const functions = (content.match(functionRegex) || []).length
 
     const imports = []
     let match
-    while ((match = importRegex.exec(content)) !== null) {
+    while (importRegex && (match = importRegex.exec(content)) !== null) {
       imports.push(match[1])
     }
 
     const contracts = []
-    while ((match = contractRegex.exec(content)) !== null) {
+    while (contractRegex && (match = contractRegex.exec(content)) !== null) {
       contracts.push(match[1])
     }
 
@@ -108,9 +115,28 @@ const FileContentModal = ({ file, content, onClose }) => {
 
   const fileName =
     file.name || (file.path ? file.path.split('/').pop() : 'Unknown File')
-  const analysis = analyzeCode(content, fileName)
 
   const renderContent = () => {
+    if (file.isDirectory) {
+      return <p>This is a directory. Its contents cannot be displayed here.</p>
+    }
+
+    if (typeof content === 'object') {
+      return (
+        <SyntaxHighlighter
+          language="json"
+          style={coldarkDark}
+          wrapLongLines
+          customStyle={{
+            maxHeight: '400px',
+            overflow: 'auto',
+          }}
+        >
+          {JSON.stringify(content, null, 2)}
+        </SyntaxHighlighter>
+      )
+    }
+
     const extension = fileName.split('.').pop().toLowerCase()
     const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg']
     const audioExtensions = ['mp3', 'wav', 'ogg']
@@ -135,10 +161,16 @@ const FileContentModal = ({ file, content, onClose }) => {
         />
       )
     } else if (content) {
+      const language = getLanguage(fileName)
+      console.log('Detected language:', language)
+      console.log('Content type:', typeof content)
+      console.log('Content preview:', content.slice(0, 100)) // Show first 100 characters
+
       return (
         <SyntaxHighlighter
-          language={getLanguage(fileName)}
-          style={docco}
+          language={language}
+          style={coldarkDark}
+          wrapLongLines
           customStyle={{
             maxHeight: '400px',
             overflow: 'auto',
@@ -153,18 +185,25 @@ const FileContentModal = ({ file, content, onClose }) => {
   }
 
   const renderAnalysis = () => {
+    if (file.isDirectory) {
+      return null // Don't show analysis for directories
+    }
+
+    const analysis = analyzeCode(content, fileName)
     return (
-      <>
+      <div className="file-analysis">
         <p>
-          <strong>Lines of code:</strong> {analysis.lines}
+          <strong>Lines of code:</strong>{' '}
+          <span className="analysis-value">{analysis.lines}</span>
         </p>
         <p>
-          <strong>Number of functions:</strong> {analysis.functions}
+          <strong>Number of functions:</strong>{' '}
+          <span className="analysis-value">{analysis.functions}</span>
         </p>
         {analysis.imports.length > 0 && (
-          <div>
+          <div className="analysis-section">
             <strong>Imports:</strong>
-            <ul>
+            <ul className="analysis-list">
               {analysis.imports.map((imp, index) => (
                 <li key={index}>{imp}</li>
               ))}
@@ -172,16 +211,16 @@ const FileContentModal = ({ file, content, onClose }) => {
           </div>
         )}
         {analysis.contracts.length > 0 && (
-          <div>
+          <div className="analysis-section">
             <strong>Contracts:</strong>
-            <ul>
+            <ul className="analysis-list">
               {analysis.contracts.map((contract, index) => (
                 <li key={index}>{contract}</li>
               ))}
             </ul>
           </div>
         )}
-      </>
+      </div>
     )
   }
 
@@ -199,88 +238,25 @@ const FileContentModal = ({ file, content, onClose }) => {
             <p>
               <strong>Path:</strong> {file.path || 'Unknown'}
             </p>
-            <p>
-              <strong>Size:</strong>{' '}
-              {file.size !== undefined ? `${file.size} bytes` : 'Unknown'}
-            </p>
-            {content && typeof content === 'string' && renderAnalysis()}
+            {!file.isDirectory && (
+              <p>
+                <strong>Size:</strong>{' '}
+                {file.size !== undefined ? `${file.size} bytes` : 'Unknown'}
+              </p>
+            )}
+            {renderAnalysis()}
+            {file.extension === 'sol' && (
+              <GasPriceCalculator fileContent={content} fileName={fileName} />
+            )}
           </div>
           <div className="file-content">
-            <h2>File Content:</h2>
+            <h2>
+              {file.isDirectory ? 'Directory Information:' : 'File Content:'}
+            </h2>
             {renderContent()}
           </div>
         </div>
       </div>
-      <style jsx>{`
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: rgba(0, 0, 0, 0.5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 1000;
-        }
-        .modal-content {
-          background-color: white;
-          border-radius: 8px;
-          width: 90%;
-          max-width: 800px;
-          max-height: 90vh;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-          text-align: justify;
-          margin: 10px;
-        }
-        .modal-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 1rem;
-          background-color: #f0f0f0;
-        }
-        .modal-header h1 {
-          margin: 0;
-          font-size: 1.5rem;
-        }
-        .close-button {
-          background: none;
-          border: none;
-          font-size: 1.5rem;
-          cursor: pointer;
-        }
-        .modal-body {
-          flex: 1;
-          overflow-y: auto;
-          padding: 1rem;
-        }
-        .file-info {
-          margin-bottom: 1rem;
-        }
-        .file-info p {
-          margin: 0.5rem 0;
-        }
-        .file-content {
-          border-top: 1px solid #e0e0e0;
-          padding-top: 1rem;
-        }
-        .file-info ul {
-          margin: 0;
-          padding-left: 20px;
-        }
-        @media (max-width: 600px) {
-          .modal-content {
-            width: 95%;
-          }
-          .modal-header h1 {
-            font-size: 1.2rem;
-          }
-        }
-      `}</style>
     </div>
   )
 }
