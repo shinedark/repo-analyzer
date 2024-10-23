@@ -18,49 +18,26 @@ const GasPriceCalculator = ({ fileContent, fileName }) => {
       .length
     setLinesOfCode(lines)
 
-    const deploymentGas = lines * 200 + 21000
-
     try {
       const response = await fetch(
         `https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=${etherscanApiKey}`,
       )
       const data = await response.json()
-
+      console.log(data, 'response')
       if (data.status === '1' && data.message === 'OK') {
-        const safeGasPrice = parseFloat(data.result.SafeGasPrice)
-        const proposeGasPrice = parseFloat(data.result.ProposeGasPrice)
-        const fastGasPrice = parseFloat(data.result.FastGasPrice)
-        const baseFee = parseFloat(data.result.suggestBaseFee)
-
-        const safeCost = (
-          (deploymentGas * (safeGasPrice + baseFee)) /
-          1e9
-        ).toFixed(6)
-        const averageCost = (
-          (deploymentGas * (proposeGasPrice + baseFee)) /
-          1e9
-        ).toFixed(6)
-        const fastCost = (
-          (deploymentGas * (fastGasPrice + baseFee)) /
-          1e9
-        ).toFixed(6)
-
-        setGasPrice({ safe: safeCost, average: averageCost, fast: fastCost })
+        setGasPrice({
+          safe: data.result.SafeGasPrice,
+          average: data.result.ProposeGasPrice,
+          fast: data.result.FastGasPrice,
+          baseFee: data.result.suggestBaseFee,
+        })
         setError(null)
       } else {
         throw new Error(data.result || 'Failed to fetch gas price')
       }
     } catch (error) {
       console.error('Error fetching gas price:', error)
-      setError(`Failed to fetch current gas price. Using fallback price.`)
-
-      const fallbackGasPrice = 50
-      const estimatedCost = (deploymentGas * fallbackGasPrice) / 1e9
-      setGasPrice({
-        safe: estimatedCost.toFixed(6),
-        average: estimatedCost.toFixed(6),
-        fast: estimatedCost.toFixed(6),
-      })
+      setError('Failed to fetch current gas price.')
     }
   }
 
@@ -73,12 +50,12 @@ const GasPriceCalculator = ({ fileContent, fileName }) => {
       <h3>Gas Price Estimation</h3>
       {gasPrice ? (
         <div className="estimation-results">
-          <p>Estimated Deployment Cost (ETH):</p>
+          <p>Current Gas Prices (Gwei):</p>
           <table className="gas-price-table">
             <thead>
               <tr>
                 <th>Speed</th>
-                <th>Cost (ETH)</th>
+                <th>Gas Price (Gwei)</th>
               </tr>
             </thead>
             <tbody>
@@ -94,10 +71,14 @@ const GasPriceCalculator = ({ fileContent, fileName }) => {
                 <td>Fast</td>
                 <td>{gasPrice.fast}</td>
               </tr>
+              <tr>
+                <td>Base Fee</td>
+                <td>{gasPrice.baseFee}</td>
+              </tr>
             </tbody>
           </table>
           <p className="note">
-            Note: These are estimates and actual costs may vary.
+            Note: These are current gas prices, not cost estimates.
           </p>
           <p className="live-price-link">
             <a
@@ -110,7 +91,7 @@ const GasPriceCalculator = ({ fileContent, fileName }) => {
           </p>
         </div>
       ) : (
-        <p className="loading">Calculating gas price...</p>
+        <p className="loading">Fetching gas prices...</p>
       )}
       <p>Lines of Code: {linesOfCode}</p>
       {error && <p className="error">{error}</p>}

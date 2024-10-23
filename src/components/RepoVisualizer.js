@@ -13,8 +13,12 @@ const getNodeColor = (fileName) => {
   return languageColors[extension] || languageColors.default
 }
 
-const RepoVisualizer = ({ repoLink }) => {
-  const [nodes, setNodes] = useState([])
+const RepoVisualizer = ({
+  repoLink,
+  setNodes: setParentNodes,
+  showLanguageLegend,
+}) => {
+  const [nodes, setLocalNodes] = useState([])
   const [edges, setEdges] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -201,8 +205,8 @@ const RepoVisualizer = ({ repoLink }) => {
       const files = await fetchRepoFiles(owner, repo)
 
       if (files.length > 0) {
-        let { nodes, edges } = createNodes(files)
-        nodes = positionNodes(nodes)
+        let { nodes: newNodes, edges: newEdges } = createNodes(files)
+        newNodes = positionNodes(newNodes)
 
         // Process file contents and create dependency edges
         for (const file of files) {
@@ -217,19 +221,21 @@ const RepoVisualizer = ({ repoLink }) => {
             const dependencies = extractDependencies(file.name, ast)
 
             // Update node with additional information
-            const nodeIndex = nodes.findIndex((node) => node.id === file.path)
+            const nodeIndex = newNodes.findIndex(
+              (node) => node.id === file.path,
+            )
             if (nodeIndex !== -1) {
-              nodes[nodeIndex].data.linesOfCode = code.split('\n').length
-              nodes[nodeIndex].data.numberOfFunctions = countFunctions(ast)
+              newNodes[nodeIndex].data.linesOfCode = code.split('\n').length
+              newNodes[nodeIndex].data.numberOfFunctions = countFunctions(ast)
             }
 
             // Create dependency edges
             dependencies.forEach((dep) => {
-              const targetNode = nodes.find((node) =>
+              const targetNode = newNodes.find((node) =>
                 node.data.label.includes(dep),
               )
               if (targetNode) {
-                edges.push({
+                newEdges.push({
                   id: `${file.path}-${targetNode.id}-dep`,
                   source: file.path,
                   target: targetNode.id,
@@ -243,8 +249,9 @@ const RepoVisualizer = ({ repoLink }) => {
           }
         }
 
-        setNodes(nodes)
-        setEdges(edges)
+        setLocalNodes(newNodes)
+        setParentNodes(newNodes)
+        setEdges(newEdges)
       } else {
         setError('No files found in the repository')
       }
@@ -255,7 +262,7 @@ const RepoVisualizer = ({ repoLink }) => {
       setIsLoading(false)
       console.log('Finished building flow elements')
     }
-  }, [repoLink, githubToken, handleNodeClick])
+  }, [repoLink, githubToken, handleNodeClick, setParentNodes])
 
   useEffect(() => {
     if (repoLink) {

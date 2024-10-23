@@ -9,6 +9,8 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@typescript-eslint/parser": "^5.62.0",
+    "bignumber.js": "^9.1.2",
+    "esprima": "^4.0.1",
     "path-browserify": "^1.0.1",
     "python-ast": "^0.1.0",
     "react": "^18.3.1",

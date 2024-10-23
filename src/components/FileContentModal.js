@@ -5,6 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { coldarkDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import GasPriceCalculator from './GasPriceCalculator'
 import './FileContentModal.css'
+import { tokenize } from 'esprima'
 
 // ... existing imports and language registrations ...
 
@@ -72,13 +73,24 @@ const FileContentModal = ({ file, content, onClose }) => {
 
   const analyzeCode = (content, fileName) => {
     if (!content || typeof content !== 'string') {
-      return { lines: 0, functions: 0, imports: [], contracts: [] }
+      return {
+        lines: 0,
+        functions: 0,
+        imports: [],
+        contracts: [],
+        complexity: 0,
+        tokens: 0,
+      }
     }
 
     const lines = content.split('\n').length
     const fileExtension = fileName.split('.').pop().toLowerCase()
 
-    let functionRegex, importRegex, contractRegex
+    let functionRegex,
+      importRegex,
+      contractRegex,
+      complexityScore = 0,
+      tokens = 0
 
     if (fileExtension === 'sol') {
       functionRegex = /function\s+(\w+)/g
@@ -87,9 +99,26 @@ const FileContentModal = ({ file, content, onClose }) => {
     } else if (fileExtension === 'js' || fileExtension === 'ts') {
       functionRegex = /function\s+(\w+)|(\w+)\s*=\s*function|\(.*\)\s*=>/g
       importRegex = /import\s+(?:(?:\{[^}]+\}|[^{}\s]+)\s+from\s+)?["']([^"']+)["']/g
+      // Calculate cyclomatic complexity (very basic)
+      complexityScore = (content.match(/if|for|while|switch|catch/g) || [])
+        .length
+
+      // Count tokens
+      try {
+        tokens = tokenize(content).length
+      } catch (error) {
+        console.error('Error tokenizing code:', error)
+      }
     } else {
       // For other file types, we'll just count lines
-      return { lines, functions: 0, imports: [], contracts: [] }
+      return {
+        lines,
+        functions: 0,
+        imports: [],
+        contracts: [],
+        complexity: 0,
+        tokens: 0,
+      }
     }
 
     const functions = (content.match(functionRegex) || []).length
@@ -105,7 +134,14 @@ const FileContentModal = ({ file, content, onClose }) => {
       contracts.push(match[1])
     }
 
-    return { lines, functions, imports, contracts }
+    return {
+      lines,
+      functions,
+      imports,
+      contracts,
+      complexity: complexityScore,
+      tokens,
+    }
   }
 
   if (!file) {
@@ -162,9 +198,9 @@ const FileContentModal = ({ file, content, onClose }) => {
       )
     } else if (content) {
       const language = getLanguage(fileName)
-      console.log('Detected language:', language)
-      console.log('Content type:', typeof content)
-      console.log('Content preview:', content.slice(0, 100)) // Show first 100 characters
+      //   console.log('Detected language:', language)
+      //   console.log('Content type:', typeof content)
+      //   console.log('Content preview:', content.slice(0, 100)) // Show first 100 characters
 
       return (
         <SyntaxHighlighter
@@ -199,6 +235,14 @@ const FileContentModal = ({ file, content, onClose }) => {
         <p>
           <strong>Number of functions:</strong>{' '}
           <span className="analysis-value">{analysis.functions}</span>
+        </p>
+        <p>
+          <strong>Cyclomatic complexity:</strong>{' '}
+          <span className="analysis-value">{analysis.complexity}</span>
+        </p>
+        <p>
+          <strong>Number of tokens:</strong>{' '}
+          <span className="analysis-value">{analysis.tokens}</span>
         </p>
         {analysis.imports.length > 0 && (
           <div className="analysis-section">
