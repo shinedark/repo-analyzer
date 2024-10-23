@@ -6,7 +6,7 @@ import {
   countFunctions,
 } from '../utils/codeParser'
 import FileContentModal from './FileContentModal'
-import LanguageColorLegend, { languageColors } from './LanguageColorLegend'
+import { languageColors } from './LanguageColorLegend'
 
 const getNodeColor = (fileName) => {
   const extension = fileName.split('.').pop().toLowerCase()
@@ -277,7 +277,6 @@ const RepoVisualizer = ({ repoLink }) => {
   return (
     <>
       <div style={{ height: '80vh', width: '80vw', border: '1px solid black' }}>
-        <LanguageColorLegend />
         <ReactFlow
           nodes={memoizedNodes}
           edges={memoizedEdges}

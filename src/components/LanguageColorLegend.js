@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 const languageColors = {
   js: '#f1e05a', // JavaScript - yellow
@@ -17,65 +17,39 @@ const languageColors = {
 }
 
 const LanguageColorLegend = () => {
-  const [isOpen, setIsOpen] = useState(false)
-
   return (
     <div
       style={{
-        position: 'fixed',
-        bottom: '20px',
-        right: '20px',
-        zIndex: 1000,
+        position: 'absolute',
+        top: '100%',
+        right: 0,
+        marginTop: '10px',
+        backgroundColor: 'white',
+        padding: '10px',
+        borderRadius: '5px',
+        boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+        maxWidth: '300px',
+        maxHeight: '400px',
+        overflowY: 'auto',
       }}
     >
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        style={{
-          padding: '10px',
-          backgroundColor: '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-        }}
-      >
-        {isOpen ? 'Hide' : 'Show'} Language
-      </button>
-      {isOpen && (
+      {Object.entries(languageColors).map(([lang, color]) => (
         <div
-          style={{
-            position: 'absolute',
-            bottom: '100%',
-            left: 0,
-            marginBottom: '10px',
-            backgroundColor: 'white',
-            padding: '10px',
-            borderRadius: '5px',
-            boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-            maxWidth: '300px',
-            maxHeight: '400px',
-            overflowY: 'auto',
-          }}
+          key={lang}
+          style={{ margin: '5px', display: 'flex', alignItems: 'center' }}
         >
-          {Object.entries(languageColors).map(([lang, color]) => (
-            <div
-              key={lang}
-              style={{ margin: '5px', display: 'flex', alignItems: 'center' }}
-            >
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: '20px',
-                  height: '20px',
-                  backgroundColor: color,
-                  marginRight: '5px',
-                }}
-              ></span>
-              {lang}
-            </div>
-          ))}
+          <span
+            style={{
+              display: 'inline-block',
+              width: '20px',
+              height: '20px',
+              backgroundColor: color,
+              marginRight: '5px',
+            }}
+          ></span>
+          {lang}
         </div>
-      )}
+      ))}
     </div>
   )
 }

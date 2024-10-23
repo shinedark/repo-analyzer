@@ -52,3 +52,15 @@ export const countFunctions = (ast) => {
   traverse(ast)
   return count
 }
+
+export function extractImports(ast) {
+  const imports = []
+  if (ast && ast.body && Array.isArray(ast.body)) {
+    ast.body.forEach((node) => {
+      if (node.type === 'ImportDeclaration') {
+        imports.push(node.source.value)
+      }
+    })
+  }
+  return imports
+}
