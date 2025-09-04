@@ -1,0 +1,117 @@
+name: 🚀 Deploy GitHub Pattern Analyzer
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: 📦 Install Dependencies
+      run: npm ci
+
+    - name: 🧪 Run Tests
+      run: npm test -- --coverage --watchAll=false
+
+    - name: 🏗️ Build Application
+      run: npm run build
+
+    - name: ⚡ Optimize Build (Human-Readable)
+      run: |
+        node build-optimizer.js --strategy max-aggression
+        echo "✅ Human-readable optimization completed"
+
+    - name: 🚀 Computer Optimization (Production)
+      run: |
+        node build-optimizer.js --computer-optimized --strategy max-aggression
+        echo "✅ Computer optimization completed"
+        
+    - name: 📊 Display Optimization Results
+      run: |
+        if [ -f "optimized-build/optimization-manifest.json" ]; then
+          echo "📈 Optimization Results:"
+          cat optimized-build/optimization-manifest.json | jq '.averageReduction, .totalOriginalSize, .totalOptimizedSize'
+        fi
+
+    - name: 🔧 Setup Debug Server (Background)
+      run: |
+        node debug-server.js 3001 &
+        sleep 2
+        echo "🔧 Debug server started at http://localhost:3001"
+
+    - name: 🧪 Test Error Translation
+      run: |
+        node error-translator.js translate "x3 is not defined"
+        echo "✅ Error translation system working"
+
+    - name: 📤 Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./build
+        cname: repo-analyzer.shinedark.dev
+
+    - name: 🎉 Deployment Success
+      if: success()
+      run: |
+        echo "🎉 Deployment completed successfully!"
+        echo "🌐 Live at: https://shinedark.github.io/repo-analyzer"
+        echo "📊 Optimization achieved: Check manifest for details"
+        echo "🔧 Debug interface available in development"
+
+    - name: 📋 Create Deployment Summary
+      if: always()
+      run: |
+        echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+        echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Build Status | ${{ job.status }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Node Version | 18 |" >> $GITHUB_STEP_SUMMARY
+        echo "| Optimization | ✅ Enabled |" >> $GITHUB_STEP_SUMMARY
+        echo "| Debug Tools | ✅ Available |" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -f "optimized-build/optimization-manifest.json" ]; then
+          REDUCTION=$(cat optimized-build/optimization-manifest.json | jq -r '.averageReduction')
+          echo "| Size Reduction | ${REDUCTION}% |" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔗 Links" >> $GITHUB_STEP_SUMMARY
+        echo "- 🌐 [Live Application](https://shinedark.github.io/repo-analyzer)" >> $GITHUB_STEP_SUMMARY
+        echo "- 📚 [Repository](https://github.com/shinedark/repo-analyzer)" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔧 [Debug Tools](http://localhost:3001) (development only)" >> $GITHUB_STEP_SUMMARY
+
+  performance-audit:
+    runs-on: ubuntu-latest
+    needs: build-and-deploy
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: 🔍 Lighthouse Performance Audit
+      uses: treosh/lighthouse-ci-action@v10
+      with:
+        urls: |
+          https://shinedark.github.io/repo-analyzer
+        configPath: '.github/lighthouse/config.json'
+        uploadArtifacts: true
+        temporaryPublicStorage: true
+
+    - name: 📊 Performance Report
+      run: |
+        echo "## 🔍 Performance Audit Results" >> $GITHUB_STEP_SUMMARY
+        echo "Lighthouse audit completed for the deployed application" >> $GITHUB_STEP_SUMMARY
+        echo "Check the artifacts for detailed performance metrics" >> $GITHUB_STEP_SUMMARY

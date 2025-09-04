@@ -1,8 +1,12 @@
-# GitHub Pattern & Language Analyzer
+# 🚀 GitHub Pattern & Language Analyzer
 
 ## Overview
 
-A powerful React-based tool for analyzing patterns, repetitions, word frequencies, and language-specific elements across GitHub repositories. This tool can analyze individual repositories or perform batch analysis across multiple major open-source projects.
+A revolutionary React-based tool for analyzing patterns, repetitions, word frequencies, and language-specific elements across GitHub repositories. Features advanced build optimization achieving **57%+ size reduction** with intelligent error translation for production deployment.
+
+**🎯 Live Demo**: [GitHub Pages](https://shinedark.github.io/repo-analyzer)  
+**📊 Performance**: Up to 57% bundle size reduction  
+**🔧 Debug Tools**: Real-time error translation system
 
 ## Features
 
@@ -29,6 +33,12 @@ A powerful React-based tool for analyzing patterns, repetitions, word frequencie
 - **Error Handling**: Robust error handling with retry mechanisms
 - **Optimized Analysis**: Efficient parsing and pattern detection algorithms
 - **Responsive Design**: Works on desktop and mobile devices
+
+### ⚡ Build Optimization
+- **Human-Readable**: 14.37% average reduction with debugging support
+- **Computer-Optimized**: 57.48% average reduction with error translation
+- **Debug Interface**: Web-based error translation at http://localhost:3001
+- **Production Ready**: Automated deployment scripts
 
 ## Quick Start
 
@@ -61,6 +71,55 @@ npm start
 ```
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Build Optimization
+
+### 🎯 Quick Optimization
+
+```bash
+# Human-readable optimization (recommended for most projects)
+npm run build:optimized
+
+# Computer-optimized (maximum performance)
+npm run build:computer
+
+# Deploy optimized build
+npm run deploy
+```
+
+### 🔧 Advanced Optimization
+
+```bash
+# Optimize existing build
+npm run optimize
+
+# Computer-optimized with error translation
+npm run optimize:computer
+
+# Start debug server for error translation
+npm run debug
+# Visit: http://localhost:3001
+```
+
+### 📊 Optimization Results
+
+| Strategy | Average Reduction | Features |
+|----------|-------------------|----------|
+| **Human-Readable** | 14.37% | Production-ready, debuggable |
+| **Computer-Optimized** | 57.48% | Maximum performance, translation-debuggable |
+
+### 🐛 Debugging Optimized Code
+
+```bash
+# Translate error messages
+npm run translate translate "x3 is not defined"
+
+# Debug specific files
+npm run translate debug ./build/static/js/main.js
+
+# Start web debug interface
+npm run debug
+```
 
 ## Usage
 

@@ -27,7 +27,14 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "build:optimized": "npm run build && node build-optimizer.js",
+    "build:computer": "npm run build && node build-optimizer.js --computer-optimized",
+    "optimize": "node build-optimizer.js",
+    "optimize:computer": "node build-optimizer.js --computer-optimized",
+    "debug": "node debug-server.js",
+    "translate": "node error-translator.js",
+    "deploy": "./optimized-build/deploy.sh"
   },
   "eslintConfig": {
     "extends": [
