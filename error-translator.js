@@ -38,12 +38,23 @@ class ErrorTranslator {
     const suggestions = [];
 
     // Translate symbol mappings
-    Object.entries(this.manifest.symbolMappings).forEach(([minified, original]) => {
+    if (this.manifest && this.manifest.symbolMappings) {
+      Object.entries(this.manifest.symbolMappings).forEach(([minified, original]) => {
       if (translated.includes(minified)) {
-        translated = translated.replace(new RegExp(minified, 'g'), original);
-        suggestions.push(`${minified} → ${original}`);
+        // Escape special regex characters in the minified string
+        const escapedMinified = minified.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        try {
+          translated = translated.replace(new RegExp(escapedMinified, 'g'), original);
+          suggestions.push(`${minified} → ${original}`);
+        } catch (error) {
+          console.warn(`Failed to replace ${minified}: ${error.message}`);
+          // Fallback to simple string replacement
+          translated = translated.split(minified).join(original);
+          suggestions.push(`${minified} → ${original} (fallback)`);
+        }
       }
     });
+    }
 
     // Add common error suggestions
     if (translated.includes('is not defined')) {
