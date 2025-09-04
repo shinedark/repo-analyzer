@@ -43,6 +43,14 @@
       "react-app/jest"
     ]
   },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@octokit|react-syntax-highlighter|refractor|@babel)/)"
+    ],
+    "moduleNameMapper": {
+      "^react-syntax-highlighter/dist/esm/(.*)$": "react-syntax-highlighter/dist/cjs/$1"
+    }
+  },
   "browserslist": {
     "production": [
       ">0.2%",
@@ -54,5 +62,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   }
 }
