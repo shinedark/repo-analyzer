@@ -29,6 +29,12 @@ jobs:
     - name: 🏗️ Build Application
       run: npm run build
 
+    - name: 🔧 Configure SPA for GitHub Pages
+      run: |
+        # Copy index.html to 404.html for SPA routing
+        cp build/index.html build/404.html
+        echo "✅ SPA routing configured"
+
     - name: ⚡ Optimize Build (Human-Readable)
       run: |
         node build-optimizer.js --strategy max-aggression
