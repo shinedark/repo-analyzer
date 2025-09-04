@@ -14,6 +14,14 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.app-description {
+  color: #666;
+  font-size: 1.1em;
+  margin: 0 auto 2rem auto;
+  max-width: 600px;
+  line-height: 1.5;
+}
+
 form {
   display: flex;
   gap: 10px;
@@ -112,4 +120,113 @@ button:hover {
 input:disabled, button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+/* Target Repository Selector Styles */
+.target-repo-selector {
+  margin: 1rem 0;
+}
+
+.selector-buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.preset-repos-toggle {
+  background-color: #f6f8fa;
+  border: 1px solid #d1d5da;
+  color: #24292e;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.preset-repos-toggle:hover {
+  background-color: #e1e4e8;
+}
+
+.batch-analysis-btn {
+  background-color: #28a745;
+  border: 1px solid #28a745;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.batch-analysis-btn:hover {
+  background-color: #218838;
+  border-color: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+}
+
+.repos-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  padding: 1rem;
+  background-color: #fafbfc;
+}
+
+.repo-category h3 {
+  color: #0366d6;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  border-bottom: 2px solid #0366d6;
+  padding-bottom: 0.3rem;
+}
+
+.repo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.repo-item {
+  background-color: white;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  padding: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.repo-item:hover {
+  border-color: #0366d6;
+  box-shadow: 0 2px 4px rgba(3, 102, 214, 0.1);
+  transform: translateY(-1px);
+}
+
+.repo-item h4 {
+  margin: 0 0 0.3rem 0;
+  color: #24292e;
+  font-size: 0.95rem;
+}
+
+.repo-item p {
+  margin: 0 0 0.5rem 0;
+  color: #586069;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+.repo-url {
+  font-size: 0.75rem;
+  color: #0366d6;
+  font-family: 'Monaco', 'Consolas', monospace;
 }

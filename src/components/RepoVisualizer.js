@@ -6,6 +6,7 @@ import {
   countFunctions,
 } from '../utils/codeParser'
 import FileContentModal from './FileContentModal'
+import AnalysisSummaryChip from './AnalysisSummaryChip'
 import { languageColors } from './LanguageColorLegend'
 
 const getNodeColor = (fileName) => {
@@ -17,6 +18,8 @@ const RepoVisualizer = ({
   repoLink,
   setNodes: setParentNodes,
   showLanguageLegend,
+  analysisData,
+  showSummaryChip,
 }) => {
   const [nodes, setLocalNodes] = useState([])
   const [edges, setEdges] = useState([])
@@ -210,15 +213,58 @@ const RepoVisualizer = ({
 
         // Process file contents and create dependency edges
         for (const file of files) {
+          // Skip files that are likely to cause parsing issues
+          const skipFile = file.name.endsWith('.d.ts') || 
+                          file.name.endsWith('.min.js') ||
+                          file.name.includes('canonicalize') ||
+                          file.name.includes('.bundle.') ||
+                          file.name.includes('.chunk.') ||
+                          file.name.includes('vendor') ||
+                          file.name.includes('polyfill') ||
+                          file.size > 500000 // Skip very large files (>500KB)
+          
+          if (skipFile) {
+            console.log(`Skipping file: ${file.name} (${skipFile ? 'declaration file or too large' : 'unknown reason'})`)
+            continue
+          }
+
           try {
             const response = await fetch(file.download_url)
             if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`)
+              console.warn(`Failed to fetch ${file.name}: ${response.status}`)
+              continue
             }
             const code = await response.text()
 
-            const ast = parseFile(file.name, code)
-            const dependencies = extractDependencies(file.name, ast)
+            // Only parse files that are likely to be parseable
+            const extension = file.name.split('.').pop()?.toLowerCase()
+            const parseableExtensions = ['js', 'jsx', 'ts', 'tsx']
+            
+            let ast = null
+            let dependencies = []
+            let functionCount = 0
+
+            if (parseableExtensions.includes(extension)) {
+              try {
+                ast = parseFile(file.name, code)
+                if (ast) {
+                  dependencies = extractDependencies(file.name, ast)
+                  functionCount = countFunctions(ast)
+                }
+              } catch (parseError) {
+                console.warn(`Parse error for ${file.name}:`, parseError.message)
+                
+                // Log specific error details for debugging
+                if (parseError.loc) {
+                  console.warn(`Error at line ${parseError.loc.line}, column ${parseError.loc.column}`)
+                }
+                
+                // Continue with basic file info even if parsing fails
+                ast = null
+                dependencies = []
+                functionCount = 0
+              }
+            }
 
             // Update node with additional information
             const nodeIndex = newNodes.findIndex(
@@ -226,7 +272,8 @@ const RepoVisualizer = ({
             )
             if (nodeIndex !== -1) {
               newNodes[nodeIndex].data.linesOfCode = code.split('\n').length
-              newNodes[nodeIndex].data.numberOfFunctions = countFunctions(ast)
+              newNodes[nodeIndex].data.numberOfFunctions = functionCount
+              newNodes[nodeIndex].data.content = code // Store content for pattern analysis
             }
 
             // Create dependency edges
@@ -245,7 +292,8 @@ const RepoVisualizer = ({
               }
             })
           } catch (error) {
-            console.error(`Error processing file ${file.name}:`, error)
+            console.warn(`Error processing file ${file.name}:`, error.message)
+            // Continue processing other files
           }
         }
 
@@ -279,6 +327,10 @@ const RepoVisualizer = ({
 
   return (
     <>
+      <AnalysisSummaryChip 
+        analysis={analysisData} 
+        isVisible={showSummaryChip && analysisData} 
+      />
       <div style={{ height: '80vh', width: '80vw', border: '1px solid black' }}>
         <ReactFlow
           nodes={memoizedNodes}

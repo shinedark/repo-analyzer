@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import RepoVisualizer from './components/RepoVisualizer'
 import Navbar from './components/Navbar'
+import TargetRepoSelector from './components/TargetRepoSelector'
 import './App.css'
 
 function App() {
@@ -11,6 +12,31 @@ function App() {
   const [nodes, setNodes] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [analysisData, setAnalysisData] = useState(null)
+  const [showSummaryChip, setShowSummaryChip] = useState(true) // Default to true for testing
+
+  // Debug: Add test data to see if chip renders
+  React.useEffect(() => {
+    if (submittedLink && !analysisData) {
+      console.log('Setting test analysis data for debugging')
+      setAnalysisData({
+        totalFiles: 10,
+        codeFiles: 8,
+        repetitions: [
+          { count: 3, files: ['test1.js', 'test2.js'] },
+          { count: 2, files: ['test3.js'] }
+        ],
+        wordFrequency: [
+          { word: 'function', count: 25 },
+          { word: 'const', count: 18 }
+        ],
+        languageStats: {
+          'JavaScript': { fileCount: 5, totalLines: 200 },
+          'TypeScript': { fileCount: 3, totalLines: 150 }
+        }
+      })
+    }
+  }, [submittedLink, analysisData])
 
   const handleLinkChange = (e) => {
     setRepoLink(e.target.value)
@@ -37,6 +63,11 @@ function App() {
     setRepoLink('')
   }
 
+  const handleRepoSelect = (url) => {
+    setRepoLink(url)
+    setError(null)
+  }
+
   return (
     <div className="App">
       {submittedLink && !isLoading && (
@@ -46,22 +77,31 @@ function App() {
           showAnalyzer={showAnalyzer}
           setShowAnalyzer={setShowAnalyzer}
           nodes={nodes}
+          repoUrl={submittedLink}
+          onAnalysisComplete={setAnalysisData}
+          showSummaryChip={showSummaryChip}
+          setShowSummaryChip={setShowSummaryChip}
         />
       )}
       <div className="container">
-        <h1>GitHub Repository Analyzer</h1>
+        <h1>GitHub Pattern & Language Analyzer</h1>
+        <p className="app-description">
+          Analyze patterns, repetitions, word frequencies, and language-specific elements across major open source repositories
+        </p>
         <form onSubmit={handleSubmit}>
           <input
             type="text"
             value={repoLink}
             onChange={handleLinkChange}
-            placeholder="Enter GitHub Repo Link (https://github.com/owner/repo)"
+            placeholder="Enter GitHub Repo Link (https://github.com/owner/repo) or choose from preset targets"
             className={error ? 'error-input' : ''}
           />
           <button type="submit" disabled={isLoading && !nodes.length}>
-            {isLoading && !nodes.length ? 'Analyzing...' : 'Analyze'}
+            {isLoading && !nodes.length ? 'Analyzing Patterns...' : 'Analyze Patterns'}
           </button>
         </form>
+
+        <TargetRepoSelector onRepoSelect={handleRepoSelect} />
 
         {error && <div className="error-message">{error}</div>}
 
@@ -77,6 +117,8 @@ function App() {
             repoLink={submittedLink}
             setNodes={setNodes}
             showLanguageLegend={showLanguageLegend}
+            analysisData={analysisData}
+            showSummaryChip={showSummaryChip}
           />
         )}
       </div>

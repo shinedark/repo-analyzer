@@ -1,6 +1,6 @@
 import React from 'react'
 import LanguageColorLegend from './LanguageColorLegend'
-import RepoAnalyzer from './RepoAnalyzer'
+import PatternAnalyzer from './PatternAnalyzer'
 
 const Navbar = ({
   showLanguageLegend,
@@ -8,6 +8,10 @@ const Navbar = ({
   showAnalyzer,
   setShowAnalyzer,
   nodes,
+  repoUrl,
+  onAnalysisComplete,
+  showSummaryChip,
+  setShowSummaryChip,
 }) => {
   // Compute used languages based on nodes
   const computeUsedLanguages = () => {
@@ -46,6 +50,20 @@ const Navbar = ({
         {showLanguageLegend ? 'Hide' : 'Show'} Language
       </button>
       <button
+        onClick={() => setShowSummaryChip(!showSummaryChip)}
+        style={{
+          marginRight: '10px',
+          padding: '5px 10px',
+          backgroundColor: showSummaryChip ? '#dc3545' : '#6f42c1',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+        }}
+      >
+        {showSummaryChip ? 'Hide' : 'Show'} Summary
+      </button>
+      <button
         onClick={() => setShowAnalyzer(true)}
         style={{
           padding: '5px 10px',
@@ -56,13 +74,18 @@ const Navbar = ({
           cursor: 'pointer',
         }}
       >
-        Analyze Repository
+        Analyze Patterns
       </button>
       {showLanguageLegend && (
         <LanguageColorLegend usedLanguages={usedLanguages} />
       )}
       {showAnalyzer && (
-        <RepoAnalyzer nodes={nodes} onClose={() => setShowAnalyzer(false)} />
+        <PatternAnalyzer 
+          nodes={nodes} 
+          onClose={() => setShowAnalyzer(false)} 
+          repoUrl={repoUrl}
+          onAnalysisComplete={onAnalysisComplete}
+        />
       )}
     </nav>
   )
