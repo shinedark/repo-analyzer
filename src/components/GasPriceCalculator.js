@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 
 const GasPriceCalculator = ({ fileContent, fileName }) => {
   const [gasPrice, setGasPrice] = useState(null)
@@ -7,13 +7,7 @@ const GasPriceCalculator = ({ fileContent, fileName }) => {
 
   const etherscanApiKey = process.env.REACT_APP_ETHERSCAN_API_KEY
 
-  useEffect(() => {
-    if (fileContent && fileName.endsWith('.sol')) {
-      calculateGasPrice()
-    }
-  }, [fileContent, fileName])
-
-  const calculateGasPrice = async () => {
+  const calculateGasPrice = useCallback(async () => {
     const lines = fileContent.split('\n').filter((line) => line.trim() !== '')
       .length
     setLinesOfCode(lines)
@@ -39,7 +33,13 @@ const GasPriceCalculator = ({ fileContent, fileName }) => {
       console.error('Error fetching gas price:', error)
       setError('Failed to fetch current gas price.')
     }
-  }
+  }, [fileContent, etherscanApiKey])
+
+  useEffect(() => {
+    if (fileContent && fileName.endsWith('.sol')) {
+      calculateGasPrice()
+    }
+  }, [fileContent, fileName, calculateGasPrice])
 
   if (!fileContent || !fileName.endsWith('.sol')) {
     return null

@@ -25,7 +25,6 @@ const RepoVisualizer = ({
   const [edges, setEdges] = useState([])
   const [error, setError] = useState(null)
   const [selectedFile, setSelectedFile] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
 
   // Use a constant to store the token and ensure it's accessible
   const githubToken = process.env.REACT_APP_GITHUB_TOKEN
@@ -52,7 +51,6 @@ const RepoVisualizer = ({
   }, [])
 
   const buildFlowElements = useCallback(async () => {
-    setIsLoading(true)
     setError(null)
     console.log('Starting to build flow elements')
     const [owner, repo] = repoLink.replace('https://github.com/', '').split('/')
@@ -300,15 +298,12 @@ const RepoVisualizer = ({
         setLocalNodes(newNodes)
         setParentNodes(newNodes)
         setEdges(newEdges)
-        setIsLoading(false)
       } else {
         setError('No files found in the repository')
-        setIsLoading(false)
       }
     } catch (error) {
       console.error('Error building flow elements:', error)
       setError(`Error building flow elements: ${error.message}`)
-      setIsLoading(false)
     }
   }, [repoLink, githubToken, handleNodeClick, setParentNodes])
 

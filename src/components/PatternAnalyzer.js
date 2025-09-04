@@ -72,7 +72,7 @@ const PatternAnalyzer = ({ nodes, onClose, repoUrl, onAnalysisComplete }) => {
     } finally {
       setIsAnalyzing(false)
     }
-  }, [nodes, repoUrl])
+  }, [nodes, repoUrl, onAnalysisComplete])
 
   useEffect(() => {
     analyzePatterns()
