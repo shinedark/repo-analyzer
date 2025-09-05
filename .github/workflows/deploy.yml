@@ -6,9 +6,15 @@ on:
   pull_request:
     branches: [ master, main ]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: github-pages
     
     steps:
     - name: 📥 Checkout Repository
@@ -63,13 +69,24 @@ jobs:
         node error-translator.js translate "x3 is not defined"
         echo "✅ Error translation system working"
 
+    - name: 🏗️ Setup Pages
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+      id: pages
+      uses: actions/configure-pages@v4
+      with:
+        static_site_generator: react
+
+    - name: 📦 Upload Pages Artifact
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./build
+
     - name: 📤 Deploy to GitHub Pages
       if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
-      uses: peaceiris/actions-gh-pages@v3
+      uses: actions/deploy-pages@v4
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./build
-        cname: repo-analyzer.shinedark.dev
+        pages: ${{ steps.pages.outputs.page_id }}
 
     - name: 🎉 Deployment Success
       if: success()
