@@ -16,8 +16,8 @@ const BatchAnalyzer = ({ targetRepos, onClose }) => {
     if (!targetRepos || targetRepos.length === 0) return
 
     if (!githubToken) {
-      setError('GitHub token is missing. Please add REACT_APP_GITHUB_TOKEN to your .env file. See README.md for setup instructions.')
-      return
+      console.warn('GitHub token not found. Using public API with rate limits.')
+      // Continue with public API access (lower rate limits)
     }
 
     setError(null) // Clear any previous errors
@@ -25,7 +25,7 @@ const BatchAnalyzer = ({ targetRepos, onClose }) => {
     setProgress({ current: 0, total: targetRepos.length })
     
     const octokit = new Octokit({
-      auth: githubToken,
+      auth: githubToken || undefined,
     })
 
     const batchResults = []

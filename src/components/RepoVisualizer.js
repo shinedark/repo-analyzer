@@ -61,18 +61,19 @@ const RepoVisualizer = ({
     const fetchRepoFiles = async (owner, repo, path = '') => {
       try {
         if (!githubToken) {
-          throw new Error(
-            'GitHub token is missing. Please add REACT_APP_GITHUB_TOKEN to your .env file. See README.md for setup instructions.',
-          )
+          console.warn('GitHub token not found. Using public API with rate limits.')
+          // For local development, we'll use the public API without authentication
+          // This has lower rate limits but works for testing
+        }
+
+        const headers = {}
+        if (githubToken) {
+          headers.Authorization = `Bearer ${githubToken}`
         }
 
         const response = await fetch(
           `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-          {
-            headers: {
-              Authorization: `Bearer ${githubToken}`,
-            },
-          },
+          { headers }
         )
         if (!response.ok) {
           throw new Error(
