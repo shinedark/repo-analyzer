@@ -37,29 +37,30 @@ class ErrorTranslator {
     let translated = errorMessage;
     const suggestions = [];
 
-    // Translate symbol mappings
+    // Translate symbol mappings with more robust length checking
     if (this.manifest && this.manifest.symbolMappings) {
       Object.entries(this.manifest.symbolMappings).forEach(([minified, original]) => {
-        // Skip very long strings that cause issues
-        if (minified.length > 100 || original.length > 100) {
+        // Skip very long strings that cause issues - be more conservative
+        if (minified.length > 50 || original.length > 50) {
+          return;
+        }
+        
+        // Skip if the minified string is too long relative to the error message
+        if (minified.length > errorMessage.length * 0.8) {
           return;
         }
         
         if (translated.includes(minified)) {
-          // Escape special regex characters in the minified string
-          const escapedMinified = minified.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           try {
-            translated = translated.replace(new RegExp(escapedMinified, 'g'), original);
-            suggestions.push(`${minified} → ${original}`);
+            // Only replace if it's a whole word, not part of another word
+            const wordBoundaryRegex = new RegExp(`\\b${minified.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
+            if (wordBoundaryRegex.test(translated)) {
+              translated = translated.replace(wordBoundaryRegex, original);
+              suggestions.push(`${minified} → ${original}`);
+            }
           } catch (error) {
             console.warn(`Failed to replace ${minified}: ${error.message}`);
-            // Fallback to simple string replacement
-            try {
-              translated = translated.split(minified).join(original);
-              suggestions.push(`${minified} → ${original} (fallback)`);
-            } catch (fallbackError) {
-              console.warn(`Fallback replacement also failed: ${fallbackError.message}`);
-            }
+            // Skip this replacement if it fails
           }
         }
       });

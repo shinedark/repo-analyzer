@@ -241,7 +241,7 @@ class PatternAnalyzerOptimizer {
       }
     };
 
-    // Find all identifiers
+    // Find identifiers but be much more selective
     const identifierRegex = /\b[a-zA-Z_$][a-zA-Z0-9_$]{4,}\b/g;
     const identifiers = new Set();
     let match;
@@ -258,55 +258,38 @@ class PatternAnalyzerOptimizer {
       );
       if (isCritical) continue;
 
+      // Only process identifiers that look like function/variable names
+      // Skip very long identifiers that are likely minified code
+      if (identifier.length > 50) continue;
+      
+      // Skip identifiers that look like encoded data
+      if (/^[A-Za-z0-9+/=]+$/.test(identifier) && identifier.length > 20) continue;
+
       identifiers.add(identifier);
     }
 
-    // Replace identifiers with short versions
-    Array.from(identifiers)
+    // Limit the number of identifiers we process to prevent huge manifests
+    const limitedIdentifiers = Array.from(identifiers)
       .sort((a, b) => b.length - a.length) // Replace longer identifiers first
-      .forEach(identifier => {
-        const shortId = generateShortId();
-        this.symbolMap.set(shortId, identifier);
-        
-        // Create regex that matches whole words only
-        const regex = new RegExp(`\\b${identifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
-        compressed = compressed.replace(regex, shortId);
-      });
+      .slice(0, aggressive ? 100 : 50); // Limit to reasonable number
+
+    // Replace identifiers with short versions
+    limitedIdentifiers.forEach(identifier => {
+      const shortId = generateShortId();
+      this.symbolMap.set(shortId, identifier);
+      
+      // Create regex that matches whole words only
+      const regex = new RegExp(`\\b${identifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
+      compressed = compressed.replace(regex, shortId);
+    });
 
     return compressed;
   }
 
   optimizeStrings(content, aggressive = false) {
-    const stringMap = new Map();
-    let counter = 0;
-    let optimized = content;
-
-    // Find repeated strings
-    const stringRegex = /"([^"]{8,})"|'([^']{8,})'/g;
-    const strings = new Map();
-    let match;
-
-    while ((match = stringRegex.exec(content)) !== null) {
-      const str = match[1] || match[2];
-      if (str.length >= (aggressive ? 6 : 8)) {
-        strings.set(str, (strings.get(str) || 0) + 1);
-      }
-    }
-
-    // Replace frequently used strings
-    Array.from(strings.entries())
-      .filter(([str, count]) => count > 1)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, aggressive ? 1000 : 500)
-      .forEach(([str]) => {
-        const shortStr = aggressive ? `s${counter++}` : `str_${counter++}`;
-        stringMap.set(shortStr, str);
-        
-        const regex = new RegExp(`"${str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`, 'g');
-        optimized = optimized.replace(regex, `"${shortStr}"`);
-      });
-
-    return optimized;
+    // Skip string optimization for now to prevent extremely large manifests
+    // This was causing the "Invalid string length" errors
+    return content;
   }
 
   optimizeNumbers(content, aggressive = false) {
@@ -397,8 +380,15 @@ class PatternAnalyzerOptimizer {
   }
 
   generateSymbolMappings(original, optimized) {
-    // Generate mappings for error translation
-    this.manifest.symbolMappings = Object.fromEntries(this.symbolMap);
+    // Generate mappings for error translation with length limits
+    const filteredMappings = {};
+    for (const [key, value] of this.symbolMap.entries()) {
+      // Only include mappings where both key and value are reasonable lengths
+      if (key.length <= 10 && value.length <= 100) {
+        filteredMappings[key] = value;
+      }
+    }
+    this.manifest.symbolMappings = filteredMappings;
     
     // Generate common error translations
     this.manifest.errorTranslations = {
