@@ -31,9 +31,13 @@ jobs:
 
     - name: 🧪 Run Tests
       run: npm test -- --coverage --watchAll=false
+      env:
+        REACT_APP_GITHUB_TOKEN: ${{ secrets.REACT_APP_GITHUB_TOKEN }}
 
     - name: 🏗️ Build Application
       run: npm run build
+      env:
+        REACT_APP_GITHUB_TOKEN: ${{ secrets.REACT_APP_GITHUB_TOKEN }}
 
     - name: 🔧 Configure SPA for GitHub Pages
       run: |

@@ -55,6 +55,8 @@ A revolutionary React-based tool for analyzing patterns, repetitions, word frequ
    - Copy the generated token
 
 2. **Configure Environment Variables:**
+
+   **For Local Development:**
    ```bash
    # Copy the example file
    cp .env.example .env
@@ -62,6 +64,13 @@ A revolutionary React-based tool for analyzing patterns, repetitions, word frequ
    # Edit .env and add your token
    REACT_APP_GITHUB_TOKEN=your_github_token_here
    ```
+
+   **For Production (GitHub Actions):**
+   - Go to your repository Settings → Secrets and variables → Actions
+   - Click "New repository secret"
+   - Name: `REACT_APP_GITHUB_TOKEN`
+   - Value: Your GitHub Personal Access Token
+   - Click "Add secret"
 
 ### Installation
 
