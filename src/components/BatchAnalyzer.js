@@ -14,6 +14,11 @@ const BatchAnalyzer = ({ targetRepos, onClose }) => {
   const analyzeBatch = useCallback(async () => {
     if (!targetRepos || targetRepos.length === 0) return
 
+    if (!githubToken) {
+      setError('GitHub token is missing. Please add REACT_APP_GITHUB_TOKEN to your .env file. See README.md for setup instructions.')
+      return
+    }
+
     setIsAnalyzing(true)
     setProgress({ current: 0, total: targetRepos.length })
     

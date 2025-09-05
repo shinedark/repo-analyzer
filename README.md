@@ -44,7 +44,24 @@ A revolutionary React-based tool for analyzing patterns, repetitions, word frequ
 
 ### Prerequisites
 - Node.js 14+ and npm
-- GitHub Personal Access Token (optional, for higher API limits)
+- GitHub Personal Access Token (required for API access)
+
+### GitHub Token Setup
+
+1. **Create a GitHub Personal Access Token:**
+   - Go to [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens)
+   - Click "Generate new token (classic)"
+   - Select scopes: `public_repo` (for public repositories) or `repo` (for private repositories)
+   - Copy the generated token
+
+2. **Configure Environment Variables:**
+   ```bash
+   # Copy the example file
+   cp .env.example .env
+   
+   # Edit .env and add your token
+   REACT_APP_GITHUB_TOKEN=your_github_token_here
+   ```
 
 ### Installation
 

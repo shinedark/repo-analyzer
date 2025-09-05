@@ -62,7 +62,7 @@ const RepoVisualizer = ({
       try {
         if (!githubToken) {
           throw new Error(
-            'GitHub token is missing. Please add it to your environment variables.',
+            'GitHub token is missing. Please add REACT_APP_GITHUB_TOKEN to your .env file. See README.md for setup instructions.',
           )
         }
 
