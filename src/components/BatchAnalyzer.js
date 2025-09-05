@@ -8,6 +8,7 @@ const BatchAnalyzer = ({ targetRepos, onClose }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [progress, setProgress] = useState({ current: 0, total: 0 })
   const [currentRepo, setCurrentRepo] = useState('')
+  const [error, setError] = useState(null)
 
   const githubToken = process.env.REACT_APP_GITHUB_TOKEN
 
@@ -19,6 +20,7 @@ const BatchAnalyzer = ({ targetRepos, onClose }) => {
       return
     }
 
+    setError(null) // Clear any previous errors
     setIsAnalyzing(true)
     setProgress({ current: 0, total: targetRepos.length })
     
@@ -308,7 +310,14 @@ const BatchAnalyzer = ({ targetRepos, onClose }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content batch-modal" onClick={(e) => e.stopPropagation()}>
         <button className="close-button" onClick={onClose}>×</button>
-        {!analysis && !isAnalyzing && (
+        {error && (
+          <div className="error-message">
+            <h3>Error</h3>
+            <p>{error}</p>
+            <button onClick={() => setError(null)}>Dismiss</button>
+          </div>
+        )}
+        {!analysis && !isAnalyzing && !error && (
           <div>
             <h2>Batch Repository Analysis</h2>
             <p>Analyze {targetRepos?.length || 0} repositories for patterns and repetitions</p>
