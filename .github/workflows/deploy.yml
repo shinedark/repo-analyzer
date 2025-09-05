@@ -124,6 +124,21 @@ jobs:
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
     
     steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: 🔍 Verify Lighthouse Config
+      run: |
+        echo "Checking for Lighthouse config file..."
+        ls -la .github/lighthouse/
+        if [ -f ".github/lighthouse/config.json" ]; then
+          echo "✅ Lighthouse config found"
+          cat .github/lighthouse/config.json
+        else
+          echo "❌ Lighthouse config not found"
+          exit 1
+        fi
+
     - name: 🔍 Lighthouse Performance Audit
       uses: treosh/lighthouse-ci-action@v10
       with:
@@ -132,6 +147,8 @@ jobs:
         configPath: '.github/lighthouse/config.json'
         uploadArtifacts: true
         temporaryPublicStorage: true
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
 
     - name: 📊 Performance Report
       run: |
