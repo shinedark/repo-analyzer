@@ -40,20 +40,29 @@ class ErrorTranslator {
     // Translate symbol mappings
     if (this.manifest && this.manifest.symbolMappings) {
       Object.entries(this.manifest.symbolMappings).forEach(([minified, original]) => {
-      if (translated.includes(minified)) {
-        // Escape special regex characters in the minified string
-        const escapedMinified = minified.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        try {
-          translated = translated.replace(new RegExp(escapedMinified, 'g'), original);
-          suggestions.push(`${minified} → ${original}`);
-        } catch (error) {
-          console.warn(`Failed to replace ${minified}: ${error.message}`);
-          // Fallback to simple string replacement
-          translated = translated.split(minified).join(original);
-          suggestions.push(`${minified} → ${original} (fallback)`);
+        // Skip very long strings that cause issues
+        if (minified.length > 100 || original.length > 100) {
+          return;
         }
-      }
-    });
+        
+        if (translated.includes(minified)) {
+          // Escape special regex characters in the minified string
+          const escapedMinified = minified.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          try {
+            translated = translated.replace(new RegExp(escapedMinified, 'g'), original);
+            suggestions.push(`${minified} → ${original}`);
+          } catch (error) {
+            console.warn(`Failed to replace ${minified}: ${error.message}`);
+            // Fallback to simple string replacement
+            try {
+              translated = translated.split(minified).join(original);
+              suggestions.push(`${minified} → ${original} (fallback)`);
+            } catch (fallbackError) {
+              console.warn(`Fallback replacement also failed: ${fallbackError.message}`);
+            }
+          }
+        }
+      });
     }
 
     // Add common error suggestions

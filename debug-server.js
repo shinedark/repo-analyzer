@@ -212,42 +212,42 @@ class DebugServer {
         }
 
         function displayTranslationResult(result) {
-            const html = \`
+            const html = `
                 <div class="result">
                     <h4>Original Error:</h4>
-                    <div class="error">\${result.original}</div>
+                    <div class="error">${result.original}</div>
                     
                     <h4>Translated Error:</h4>
-                    <div class="success">\${result.translated}</div>
+                    <div class="success">${result.translated}</div>
                     
                     <h4>Suggestions:</h4>
-                    \${result.suggestions.map(s => '<div class="suggestion">' + s + '</div>').join('')}
+                    ${result.suggestions.map(s => '<div class="suggestion">' + s + '</div>').join('')}
                 </div>
-            \`;
+            `;
             document.getElementById('translationResult').innerHTML = html;
         }
 
         function displayDebugResult(result) {
-            const html = \`
+            const html = `
                 <div class="result">
                     <h4>Debug Results:</h4>
-                    <div class="\${result.success ? 'success' : 'warning'}">
-                        \${result.message}
+                    <div class="${result.success ? 'success' : 'warning'}">
+                        ${result.message}
                     </div>
                     
-                    \${result.issues && result.issues.length > 0 ? 
+                    ${result.issues && result.issues.length > 0 ? 
                         '<h4>Issues Found:</h4>' + 
                         result.issues.map(issue => '<div class="warning">⚠️ ' + issue + '</div>').join('')
                         : ''
                     }
                     
-                    \${result.mappings && result.mappings.length > 0 ? 
+                    ${result.mappings && result.mappings.length > 0 ? 
                         '<h4>Symbol Mappings:</h4>' + 
                         result.mappings.map(m => '<div>' + m + '</div>').join('')
                         : ''
                     }
                 </div>
-            \`;
+            `;
             document.getElementById('debugResult').innerHTML = html;
         }
 
@@ -261,14 +261,14 @@ class DebugServer {
                 const response = await fetch('/status');
                 if (response.ok) {
                     const status = await response.json();
-                    document.getElementById('optimizationStatus').innerHTML = \`
+                    document.getElementById('optimizationStatus').innerHTML = `
                         <div class="result success">
                             <h4>✅ Optimization Active</h4>
-                            <p>Strategy: \${status.strategy}</p>
-                            <p>Average Reduction: \${status.averageReduction}%</p>
-                            <p>Files Optimized: \${status.files}</p>
+                            <p>Strategy: ${status.strategy}</p>
+                            <p>Average Reduction: ${status.averageReduction}%</p>
+                            <p>Files Optimized: ${status.files}</p>
                         </div>
-                    \`;
+                    `;
                 } else {
                     document.getElementById('optimizationStatus').innerHTML = 
                         '<div class="result warning">⚠️ No optimization manifest found</div>';
@@ -314,7 +314,7 @@ class DebugServer {
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({
             success: false,
-            message: \`File not found: \${filePath}\`,
+            message: `File not found: ${filePath}`,
             issues: [],
             mappings: []
           }));
@@ -335,14 +335,14 @@ class DebugServer {
           Object.entries(this.translator.manifest.symbolMappings)
             .slice(0, 10)
             .forEach(([minified, original]) => {
-              mappings.push(\`\${minified} → \${original}\`);
+              mappings.push(`${minified} → ${original}`);
             });
         }
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           success: issues.length === 0,
-          message: issues.length === 0 ? 'No obvious issues detected' : \`\${issues.length} potential issues found\`,
+          message: issues.length === 0 ? 'No obvious issues detected' : `${issues.length} potential issues found`,
           issues,
           mappings
         }));
